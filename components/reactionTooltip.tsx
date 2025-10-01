@@ -1,3 +1,4 @@
+"use client";
 import { useChat } from "@/providers/chatProvider";
 import type { EmojiKind, Reaction } from "@/types/reaction";
 import { DEFAULT_EMOJI_KIND, EMOJI_ICON } from "@/utils/constants";
@@ -39,20 +40,20 @@ const ReactionTooltip = ({
             key={e.toString()}
             emoji={EMOJI_ICON?.[e]}
             count={0}
-            onClick={() => addReaction(id, EMOJI_ICON?.[e])}
+            onClick={() => addReaction(id, e)}
             active={undefined}
           />
         ))}
       </div>
 
       {reactions ? (
-        <div className="mt-3  flex gap-2">
+        <div className="mt-3 flex gap-2">
           {reactions?.map((react) => (
             <ReactionPill
               key={react.kind}
               emoji={EMOJI_ICON?.[react.kind]}
               count={react?.count || 0}
-              onClick={() => addReaction(id, "👍")}
+              onClick={() => addReaction(id, react.kind)}
               active={!!react?.byMe}
             />
           ))}

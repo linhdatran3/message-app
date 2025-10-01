@@ -1,0 +1,12 @@
+{
+  "channels": {
+    "general": [
+      {
+        "id": "1",
+        "user": "alice",
+        "text": "Hello world",
+        "createdAt": "2025-10-01T10:00:00Z"
+      }
+    ]
+  }
+}

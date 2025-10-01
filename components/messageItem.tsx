@@ -2,34 +2,36 @@ import type { Message } from "@/types/message";
 import { formatTime, renderMarkdownToHtml } from "@/utils/utils";
 import { ReactionTooltip } from "./reactionTooltip";
 
-const MessageItem = ({ message }: { message: Message }) => {
+const MessageItem = ({
+  id,
+  fromMe = false,
+  createdAt,
+  text,
+  attachments,
+  scheduledAt,
+}: Message) => {
   return (
-    <ReactionTooltip
-      id={message.id}
-      position={message?.fromMe ? "right" : "left"}
-    >
-      <div
-        className={`flex ${message.fromMe ? "justify-end" : "justify-start"}`}
-      >
+    <ReactionTooltip id={id} position={fromMe ? "right" : "left"}>
+      <div className={`flex ${fromMe ? "justify-end" : "justify-start"}`}>
         <div
           className={`max-w-[75%] bg-primary p-3 rounded-2xl shadow-sm border ${
-            message.fromMe ? "rounded-br-none" : "rounded-bl-none"
+            fromMe ? "rounded-br-none" : "rounded-bl-none"
           }`}
         >
           <div className="text-xs text-slate-400 mb-1">
-            {message.fromMe ? "You" : "User"} • {formatTime(message.createdAt)}
+            {fromMe ? "You" : "User"} • {formatTime(createdAt)}
           </div>
           <div
             className="prose-sm break-words"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
             dangerouslySetInnerHTML={{
-              __html: renderMarkdownToHtml(message.text),
+              __html: renderMarkdownToHtml(text),
             }}
           />
 
-          {message.attachments && message.attachments.length > 0 && (
+          {attachments && attachments.length > 0 && (
             <div className="mt-2 grid grid-cols-3 gap-2">
-              {message.attachments.map((a) => (
+              {attachments.map((a) => (
                 <div key={a.id} className="flex flex-col items-start gap-1">
                   {a.type.startsWith("image/") ? (
                     <img
@@ -50,9 +52,9 @@ const MessageItem = ({ message }: { message: Message }) => {
             </div>
           )}
 
-          {message.scheduledAt ? (
+          {scheduledAt ? (
             <div className="mt-2 text-xs text-amber-600">
-              Scheduled for {formatTime(message.scheduledAt)}
+              Scheduled for {formatTime(scheduledAt)}
             </div>
           ) : null}
         </div>
