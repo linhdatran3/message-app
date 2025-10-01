@@ -35,3 +35,43 @@ export function renderMarkdownToHtml(input: string) {
 
 export const uid = (prefix = "id") =>
   `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
+
+export function markdownToHtml(markdown: string): string {
+  let html = markdown;
+
+  // Escape HTML first (to avoid injection issues)
+  html = html.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  // headings
+  html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
+  html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
+  html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+  // bold + italic
+  html = html.replace(/\*\*(.*?)\*\*/gim, "<b>$1</b>");
+  html = html.replace(/\*(.*?)\*/gim, "<i>$1</i>");
+  html = html.replace(/_(.*?)_/gim, "<i>$1</i>");
+
+  // inline code
+  html = html.replace(/`([^`]+)`/gim, "<code>$1</code>");
+
+  // links [text](url)
+  html = html.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2">$1</a>');
+
+  // unordered list (- item)
+  html = html.replace(/^- (.*$)/gim, "<ul><li>$1</li></ul>");
+  // ordered list (1. item)
+  html = html.replace(/^\d+\. (.*$)/gim, "<ol><li>$1</li></ol>");
+
+  // paragraphs (any line that isn’t wrapped yet)
+  html = html.replace(/^\s*(\S.*)$/gm, "<p>$1</p>");
+
+  // line breaks
+  html = html.replace(/\n/g, "<br/>");
+
+  // merge multiple <ul> or <ol> into one
+  html = html.replace(/<\/ul>\s*<ul>/g, "");
+  html = html.replace(/<\/ol>\s*<ol>/g, "");
+
+  return html.trim();
+}

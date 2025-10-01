@@ -21,12 +21,12 @@ export const useChat = () => {
   return ctx;
 };
 
-export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ChatProvider: React.FC<{
+  children: React.ReactNode;
+  channel?: string;
+}> = ({ children, channel = "general" }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const channel = "general"; // sau này có thể dynamic
 
   // load messages từ server
   useEffect(() => {
@@ -41,7 +41,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         setMessages([]);
         setIsLoading(false);
       });
-  }, []);
+  }, [channel]);
 
   const removeAttachmentObjectURLs = (attachments: Attachment[]) => {
     attachments.map((a) => URL.revokeObjectURL(a.url));

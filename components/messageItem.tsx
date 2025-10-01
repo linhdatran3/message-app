@@ -1,5 +1,9 @@
 import type { Message } from "@/types/message";
-import { formatTime, renderMarkdownToHtml } from "@/utils/utils";
+import {
+  formatTime,
+  markdownToHtml,
+  renderMarkdownToHtml,
+} from "@/utils/utils";
 import { ReactionTooltip } from "./reactionTooltip";
 
 const MessageItem = ({
@@ -25,7 +29,7 @@ const MessageItem = ({
             className="prose-sm break-words"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
             dangerouslySetInnerHTML={{
-              __html: renderMarkdownToHtml(text),
+              __html: markdownToHtml(text),
             }}
           />
 

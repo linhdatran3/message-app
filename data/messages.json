@@ -6,6 +6,22 @@
         "user": "alice",
         "text": "Hello world",
         "createdAt": "2025-10-01T10:00:00Z"
+      },
+      {
+        "id": "msg_nxk5kgg",
+        "text": "_Hello nha_",
+        "attachments": [],
+        "createdAt": 1759329481261,
+        "scheduledAt": null,
+        "fromMe": true
+      },
+      {
+        "id": "msg_htnf5gj",
+        "text": "aguuu",
+        "attachments": [],
+        "createdAt": 1759329591804,
+        "scheduledAt": null,
+        "fromMe": true
       }
     ]
   }
