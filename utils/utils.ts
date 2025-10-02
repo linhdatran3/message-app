@@ -3,75 +3,91 @@ export function formatTime(ts: number) {
   return d.toLocaleString();
 }
 
-// Very simple markdown -> HTML converter supporting **bold**, *italic*, `code`, [text](url)
-export function renderMarkdownToHtml(input: string) {
-  if (!input) return "";
-  let out = input
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  // code spans `code`
-  out = out.replace(
-    /`([^`]+)`/g,
-    (m, p1) => `<code class="px-1 rounded bg-slate-100">${p1}</code>`
-  );
-  // bold **text**
-  out = out.replace(/\*\*([^*]+)\*\*/g, (m, p1) => `<strong>${p1}</strong>`);
-  // italic *text*
-  out = out.replace(/\*([^*]+)\*/g, (m, p1) => `<em>${p1}</em>`);
-  // links [text](url)
-  out = out.replace(
-    /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-    (m, p1, p2) =>
-      `<a href="${p2}" target="_blank" rel="noreferrer" class="underline">${p1}</a>`
-  );
-
-  // newline -> <br>
-  out = out.replace(/\n/g, "<br />");
-
-  return out;
-}
-
 export const uid = (prefix = "id") =>
   `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 
-export function markdownToHtml(markdown: string): string {
+export function generateMarkdownToHTML(markdown: string) {
+  if (!markdown) return "";
+
   let html = markdown;
 
-  // Escape HTML first (to avoid injection issues)
-  html = html.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  // headings
+  // Headers (must come before other replacements)
   html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
   html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
   html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
 
-  // bold + italic
-  html = html.replace(/\*\*(.*?)\*\*/gim, "<b>$1</b>");
-  html = html.replace(/\*(.*?)\*/gim, "<i>$1</i>");
-  html = html.replace(/_(.*?)_/gim, "<i>$1</i>");
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/__(.+?)__/g, "<strong>$1</strong>");
 
-  // inline code
-  html = html.replace(/`([^`]+)`/gim, "<code>$1</code>");
+  // Italic
+  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  html = html.replace(/_(.+?)_/g, "<em>$1</em>");
 
-  // links [text](url)
-  html = html.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2">$1</a>');
+  // Strikethrough
+  html = html.replace(/~~(.+?)~~/g, "<del>$1</del>");
 
-  // unordered list (- item)
-  html = html.replace(/^- (.*$)/gim, "<ul><li>$1</li></ul>");
-  // ordered list (1. item)
-  html = html.replace(/^\d+\. (.*$)/gim, "<ol><li>$1</li></ol>");
+  // Code blocks (must come before inline code)
+  html = html.replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
 
-  // paragraphs (any line that isn’t wrapped yet)
-  html = html.replace(/^\s*(\S.*)$/gm, "<p>$1</p>");
+  // Inline code
+  html = html.replace(/`(.+?)`/g, "<code>$1</code>");
 
-  // line breaks
-  html = html.replace(/\n/g, "<br/>");
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
-  // merge multiple <ul> or <ol> into one
-  html = html.replace(/<\/ul>\s*<ul>/g, "");
-  html = html.replace(/<\/ol>\s*<ol>/g, "");
+  // Images
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
 
-  return html.trim();
+  // Unordered lists
+  html = html.replace(/^\* (.+)$/gim, "<li>$1</li>");
+  html = html.replace(/^- (.+)$/gim, "<li>$1</li>");
+  // html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
+
+  // Ordered lists
+  html = html.replace(/^\d+\. (.+)$/gim, "<li>$1</li>");
+
+  // Blockquotes
+  html = html.replace(/^> (.+)$/gim, "<blockquote>$1</blockquote>");
+
+  // Horizontal rule
+  html = html.replace(/^---$/gim, "<hr />");
+  html = html.replace(/^\*\*\*$/gim, "<hr />");
+
+  // Line breaks - preserve existing <br> tags and convert double newlines
+  html = html.replace(/\n\n/g, "</p><p>");
+  html = html.replace(/^(.+)$/gim, (match) => {
+    if (match.startsWith("<") || match.trim() === "") return match;
+    return match;
+  });
+
+  // Wrap in paragraph if not already wrapped
+  if (!html.startsWith("<")) {
+    html = `<p>${html}</p>`;
+  }
+
+  return html;
+}
+
+export function getHighlightedText(): string {
+  const selection = window.getSelection();
+  if (selection) {
+    return selection.toString();
+  }
+  return "";
+}
+
+// Helper function to get selection range info
+export function getSelectionRange() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return null;
+
+  const range = selection.getRangeAt(0);
+  return {
+    range,
+    startContainer: range.startContainer,
+    endContainer: range.endContainer,
+    startOffset: range.startOffset,
+    endOffset: range.endOffset,
+  };
 }

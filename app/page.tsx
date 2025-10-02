@@ -7,37 +7,28 @@ export default function Home() {
   const [savedUsername, setSavedUsername] = useState<string | undefined>(
     undefined
   );
-  const [stored, setStored] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedData = localStorage.getItem("username")?.trim();
-      setStored(storedData);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (stored) {
-      setSavedUsername(stored);
-      setUsername(stored);
-    }
-  }, [stored]);
 
   const handleAddUsername = () => {
     //TODO: register account by username - check conflict username
     if (username.trim()) {
       localStorage.setItem("username", username.trim());
       setSavedUsername(username.trim());
-
       alert(
-        stored === ""
-          ? "Add username successfully"
-          : "Update username successfully!"
+        localStorage.getItem("username")?.trim()
+          ? "Update username successfully!"
+          : "Add username successfully"
       );
     } else {
       alert("Please enter a username first!");
     }
   };
+
+  useEffect(() => {
+    const stored = localStorage.getItem("username")?.trim();
+    if (stored) {
+      setUsername(stored);
+    }
+  }, []);
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
@@ -69,9 +60,12 @@ export default function Home() {
               type="button"
               onClick={handleAddUsername}
               className="px-4 py-2 bg-primary text-foreground rounded-md hover:opacity-60 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={stored === username}
+              disabled={localStorage.getItem("username")?.trim() === username}
+              suppressHydrationWarning
             >
-              {stored === undefined ? "Add" : "Change"}
+              {localStorage.getItem("username")?.trim() === undefined
+                ? "Add"
+                : "Change"}
             </button>
           </div>
           <span className="text-sm text-gray-500">
