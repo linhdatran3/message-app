@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Message App",
   description: "Provided the channel platforms",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: "favicon.ico",
+    apple: "favicon.ico",
   },
 };
 
