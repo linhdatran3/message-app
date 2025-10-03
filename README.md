@@ -116,7 +116,7 @@ A real-time messaging application built with Next.js, featuring multi-channel co
 4. **Open in browser:**
 
 ```
-      [pnpm dev](http://localhost:3000)
+     http://localhost:3000
 ```
 
 ## Project Structure
