@@ -1,19 +1,19 @@
 import type { Reaction } from "./reaction";
 
-export type Attachment = {
+export type AttachedFile = {
   id: string;
   name: string;
-  type: string; // mime
-  url: string; // object URL
-  size?: number;
+  size: number;
+  type: string;
+  base64Data: string;
 };
-
 export type Message = {
   id: string;
   text: string; // raw markdown-ish text
-  attachments: Attachment[];
+  attachments: AttachedFile[] | undefined;
   createdAt: number;
   scheduledAt?: number | null;
   reactions?: Reaction[];
   fromMe?: boolean;
+  username: string; //TODO: use User object has userId
 };

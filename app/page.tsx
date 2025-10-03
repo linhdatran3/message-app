@@ -4,15 +4,12 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [username, setUsername] = useState("");
-  const [savedUsername, setSavedUsername] = useState<string | undefined>(
-    undefined
-  );
 
   const handleAddUsername = () => {
     //TODO: register account by username - check conflict username
     if (username.trim()) {
       localStorage.setItem("username", username.trim());
-      setSavedUsername(username.trim());
+      setUsername(username.trim());
       alert(
         localStorage.getItem("username")?.trim()
           ? "Update username successfully!"
@@ -60,10 +57,16 @@ export default function Home() {
               type="button"
               onClick={handleAddUsername}
               className="px-4 py-2 bg-primary text-foreground rounded-md hover:opacity-60 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={localStorage.getItem("username")?.trim() === username}
+              disabled={
+                typeof window !== "undefined" &&
+                window.localStorage &&
+                localStorage.getItem("username")?.trim() === username
+              }
               suppressHydrationWarning
             >
-              {localStorage.getItem("username")?.trim() === undefined
+              {typeof window !== "undefined" &&
+              window.localStorage &&
+              localStorage.getItem("username")?.trim() === undefined
                 ? "Add"
                 : "Change"}
             </button>
@@ -78,13 +81,13 @@ export default function Home() {
           <div className="flex flex-col gap-3">
             <a
               className={`p-4 border rounded-lg transition ${
-                savedUsername
+                username
                   ? "hover:shadow-md hover:border-primary cursor-pointer"
                   : "opacity-50 cursor-not-allowed"
               }`}
-              href={savedUsername ? "/chat/general" : "#"}
+              href={username ? "/chat/general" : "#"}
               onClick={(e) => {
-                if (!savedUsername) {
+                if (!username) {
                   e.preventDefault();
                   alert("Please enter and save your username first!");
                 }

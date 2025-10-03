@@ -1,16 +1,18 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import type { Attachment, Message } from "@/types/message";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import type { Message } from "@/types/message";
 import type { EmojiKind } from "@/types/reaction";
 import { uid } from "@/utils/utils";
 
 type ChatContextValue = {
   isLoading: boolean;
   messages: Message[];
-  sendMessage: (msg: Omit<Message, "id" | "createdAt">) => Promise<Message>;
+  username?: string;
+  sendMessage: (
+    msg: Omit<Message, "id" | "createdAt" | "fromMe">
+  ) => Promise<Message>;
   addReaction: (messageId: string, emoji: EmojiKind) => Promise<void>;
-  removeAttachmentObjectURLs: (attachments: Attachment[]) => void;
 };
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -28,24 +30,31 @@ export const ChatProvider: React.FC<{
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // load messages từ server
+  const username = useMemo(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("username")?.trim() || "";
+    }
+    return "";
+  }, []);
+
   useEffect(() => {
     setIsLoading(true);
     fetch(`/api/messages/${channel}`)
       .then((res) => res.json())
       .then((data) => {
         setIsLoading(false);
-        setMessages(data);
+        setMessages(
+          (data as Message[])?.map((item) => ({
+            ...item,
+            fromMe: item.username === username,
+          }))
+        );
       })
       .catch(() => {
         setMessages([]);
         setIsLoading(false);
       });
-  }, [channel]);
-
-  const removeAttachmentObjectURLs = (attachments: Attachment[]) => {
-    attachments.map((a) => URL.revokeObjectURL(a.url));
-  };
+  }, [channel, username]);
 
   const sendMessage = async (msg: Omit<Message, "id" | "createdAt">) => {
     const m: Message = {
@@ -56,12 +65,11 @@ export const ChatProvider: React.FC<{
       scheduledAt: msg.scheduledAt || null,
       reactions: undefined,
       fromMe: true,
+      username: username,
     };
 
-    // optimistic update
     setMessages((prev) => [...prev, m]);
 
-    // gửi lên server
     try {
       await fetch(`/api/messages/${channel}`, {
         method: "POST",
@@ -76,25 +84,83 @@ export const ChatProvider: React.FC<{
   };
 
   const addReaction = async (messageId: string, emoji: EmojiKind) => {
-    // update local ngay lập tức
-    // setMessages((prev) =>
-    //   prev.map((m) => {
-    //     if (m.id !== messageId) return m;
-    //     const reactions = { ...(m.reactions || {}) };
-    //     if (!reactions[emoji])
-    //       reactions[emoji] = { kind: emoji, count: 0, byMe: false };
-    //     const r = reactions[emoji];
-    //     if (r.byMe) {
-    //       r.byMe = false;
-    //       r.count = Math.max(0, r.count - 1);
-    //     } else {
-    //       r.byMe = true;
-    //       r.count = r.count + 1;
-    //     }
-    //     return { ...m, reactions };
-    //   })
-    // );
-    // gửi reaction lên server (tạm bỏ qua, bạn có thể viết API riêng)
+    if (!username) {
+      console.warn("No username found");
+      return;
+    }
+
+    const previousMessages = messages;
+
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== messageId) return m;
+
+        const reactions = m.reactions || [];
+        const reactionIndex = reactions.findIndex((r) => r.kind === emoji);
+
+        if (reactionIndex !== -1) {
+          const reaction = { ...reactions[reactionIndex] };
+          const users = [...(reaction.users || [])];
+          const userIndex = users.indexOf(username);
+
+          const updatedReactions = [...reactions];
+
+          if (userIndex !== -1) {
+            users.splice(userIndex, 1);
+
+            if (users.length === 0) {
+              updatedReactions.splice(reactionIndex, 1);
+            } else {
+              updatedReactions[reactionIndex] = {
+                ...reaction,
+                users,
+                count: users.length,
+              };
+            }
+          } else {
+            users.push(username);
+            updatedReactions[reactionIndex] = {
+              ...reaction,
+              users,
+              count: users.length,
+            };
+          }
+
+          return { ...m, reactions: updatedReactions };
+        } else {
+          return {
+            ...m,
+            reactions: [
+              ...reactions,
+              {
+                kind: emoji,
+                users: [username],
+                count: 1,
+              },
+            ],
+          };
+        }
+      })
+    );
+
+    try {
+      const res = await fetch(`/api/messages/${channel}/reactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId,
+          emoji,
+          username,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save reaction");
+      }
+    } catch (e) {
+      console.error("Failed to save reaction", e);
+      setMessages(previousMessages);
+    }
   };
 
   const ctxValue: ChatContextValue = {
@@ -102,7 +168,7 @@ export const ChatProvider: React.FC<{
     messages,
     sendMessage,
     addReaction,
-    removeAttachmentObjectURLs,
+    username,
   };
 
   return (

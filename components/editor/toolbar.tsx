@@ -47,21 +47,21 @@ const Toolbar = ({ editorRef, onChange }: ToolbarProps) => {
     <div>
       <button
         type="button"
-        className="py-2 px-4 font-bold hover:opacity-60 hover:bg-background hover:rounded-lg"
+        className="py-2 px-4 font-bold hover:bg-foreground/10 hover:rounded-lg"
         onClick={() => handleAddFontStyles("bold")}
       >
         B
       </button>
       <button
         type="button"
-        className="py-2 px-4 italic hover:opacity-60 hover:bg-background hover:rounded-lg"
+        className="py-2 px-4 italic hover:bg-foreground/10 hover:rounded-lg"
         onClick={() => handleAddFontStyles("italic")}
       >
         I
       </button>
       <button
         type="button"
-        className="py-2 px-4 hover:opacity-60 hover:bg-background hover:rounded-lg"
+        className="py-2 px-4 hover:bg-foreground/10 hover:rounded-lg"
         onClick={() => handleAddFontStyles("code")}
       >
         {"<>"}

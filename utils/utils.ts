@@ -1,5 +1,6 @@
 export function formatTime(ts: number) {
   const d = new Date(ts);
+  //TODO: format time
   return d.toLocaleString();
 }
 
@@ -91,3 +92,21 @@ export function getSelectionRange() {
     endOffset: range.endOffset,
   };
 }
+
+export const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+export const getTextLength = (html: string): number => {
+  if (typeof document !== "undefined") {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent?.length || 0;
+  }
+  return 0;
+};
