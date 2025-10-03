@@ -34,8 +34,8 @@ A real-time messaging application built with Next.js, featuring multi-channel co
   - Inline code
 - **File attachments** (external)
 - **Content limits:**
-  - Max 5000 characters per message
-  - Max 5 files per message
+  - Max 1000 characters per message
+  - Max 3 files per message
   - Max 10MB per file
 - Two modes: Write & Preview
 - Character counter with visual warnings
@@ -67,7 +67,6 @@ A real-time messaging application built with Next.js, featuring multi-channel co
 - [ ] Paste image from clipboard
 - [ ] Inline file embedding
 - [ ] Code syntax highlighting
-- [ ] Markdown shortcuts (e.g., `**text**` → **text**)
 
 #### Messages
 
