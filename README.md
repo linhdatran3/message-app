@@ -1,24 +1,24 @@
-# 💬 Message App
+# Message App
 
 A real-time messaging application built with Next.js, featuring multi-channel communication, rich text editing, and file attachments.
 
-## ✨ Features
+## Features
 
 ### Current Features
 
-#### 🔐 Authentication
+#### Authentication
 
 - Username-based authentication
 - User must enter username to join channels
 - Username persists in localStorage
 
-#### 📢 Channels
+#### Channels
 
 - Multiple channel support
 - Public channels accessible to all users
 - Channel-based message organization
 
-#### 💬 Messaging
+#### Messaging
 
 - Real-time message sending and receiving
 - Message reactions (👍 Like, ❤️ Love, 😂 Laugh)
@@ -26,7 +26,7 @@ A real-time messaging application built with Next.js, featuring multi-channel co
 - Desktop: Hover to add reactions
 - Mobile: Long press to add reactions
 
-#### ✍️ Rich Text Editor
+#### Rich Text Editor
 
 - **Markdown support:**
   - Bold text
@@ -40,13 +40,13 @@ A real-time messaging application built with Next.js, featuring multi-channel co
 - Two modes: Write & Preview
 - Character counter with visual warnings
 
-#### 💾 Data Storage
+#### Data Storage
 
 - File-based storage using `data/messages.json`
 - Simple read/write operations
 - No database required
 
-### 🚀 Upcoming Features
+### Upcoming Features
 
 #### Channels
 
@@ -58,7 +58,6 @@ A real-time messaging application built with Next.js, featuring multi-channel co
 
 - [ ] Extended emoji reactions
 - [ ] Custom emoji support
-- [ ] Reaction analytics
 
 #### Editor
 
