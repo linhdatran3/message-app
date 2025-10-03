@@ -1,31 +1,67 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChannelCard } from "@/components/channelCard";
+
+const STORAGE_KEY = "username";
 
 export default function Home() {
   const [username, setUsername] = useState("");
-
-  const handleAddUsername = () => {
-    //TODO: register account by username - check conflict username
-    if (username.trim()) {
-      localStorage.setItem("username", username.trim());
-      setUsername(username.trim());
-      alert(
-        localStorage.getItem("username")?.trim()
-          ? "Update username successfully!"
-          : "Add username successfully"
-      );
-    } else {
-      alert("Please enter a username first!");
-    }
-  };
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("username")?.trim();
+    setIsClient(true);
+    const stored = localStorage.getItem(STORAGE_KEY)?.trim() || "";
     if (stored) {
       setUsername(stored);
     }
   }, []);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <off>
+  const storedUsername = useMemo(() => {
+    if (!isClient) return "";
+    return localStorage.getItem(STORAGE_KEY)?.trim() || "";
+  }, [isClient, username]);
+
+  const hasChanges = useMemo(
+    () => username.trim() !== storedUsername,
+    [username, storedUsername]
+  );
+
+  const isUsernameValid = useMemo(() => username.trim().length > 0, [username]);
+
+  const handleSaveUsername = useCallback(() => {
+    const trimmedUsername = username.trim();
+
+    if (!trimmedUsername) {
+      alert("Please enter a username first!");
+      return;
+    }
+
+    const isUpdate = !!storedUsername;
+    localStorage.setItem(STORAGE_KEY, trimmedUsername);
+
+    alert(
+      isUpdate
+        ? "Username updated successfully!"
+        : "Username saved successfully!"
+    );
+
+    setUsername(trimmedUsername);
+  }, [username, storedUsername]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && hasChanges && isUsernameValid) {
+        handleSaveUsername();
+      }
+    },
+    [hasChanges, isUsernameValid, handleSaveUsername]
+  );
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
@@ -39,11 +75,13 @@ export default function Home() {
           priority
         />
 
-        <h1 className="text-2xl font-bold">Welcome to Message App</h1>
-        <p className="text-gray-600">
-          To get started, please add your username and select a channel to join
-          the chat.
-        </p>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold">Welcome to Message App</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            To get started, please add your username and select a channel to
+            join the chat.
+          </p>
+        </div>
 
         <div className="flex flex-col gap-2 w-full">
           <div className="flex gap-2">
@@ -52,55 +90,39 @@ export default function Home() {
               placeholder="Enter username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoComplete="username"
             />
             <button
               type="button"
-              onClick={handleAddUsername}
-              className="px-4 py-2 bg-primary text-foreground rounded-md hover:opacity-60 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={
-                typeof window !== "undefined" &&
-                window.localStorage &&
-                localStorage.getItem("username")?.trim() === username
-              }
-              suppressHydrationWarning
+              onClick={handleSaveUsername}
+              className="px-4 py-2 bg-primary text-foreground rounded-md hover:opacity-80 
+                disabled:cursor-not-allowed disabled:opacity-50 transition-opacity"
+              disabled={!hasChanges || !isUsernameValid}
             >
-              {typeof window !== "undefined" &&
-              window.localStorage &&
-              localStorage.getItem("username")?.trim() === undefined
-                ? "Add"
-                : "Change"}
+              Save
             </button>
           </div>
-          <span className="text-sm text-gray-500">
-            * The username will be saved in your local storage
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            * Your username will be saved in local storage
           </span>
         </div>
 
+        {/* Channels List */}
         <div className="w-full">
           <h3 className="text-lg font-semibold mb-2">Available Channels</h3>
           <div className="flex flex-col gap-3">
-            <a
-              className={`p-4 border rounded-lg transition ${
-                username
-                  ? "hover:shadow-md hover:border-primary cursor-pointer"
-                  : "opacity-50 cursor-not-allowed"
-              }`}
-              href={username ? "/chat/general" : "#"}
-              onClick={(e) => {
-                if (!username) {
-                  e.preventDefault();
-                  alert("Please enter and save your username first!");
-                }
-              }}
-            >
-              <p className="font-medium">General Channel</p>
-              <span className="text-sm text-forground/80">
-                Chat with everyone in the community
-              </span>
-            </a>
+            <ChannelCard
+              title="General Channel"
+              description="Chat with everyone in the community"
+              href="/chat/general"
+              username={username}
+            />
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+// Separated component for better reusability
